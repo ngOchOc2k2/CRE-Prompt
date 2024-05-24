@@ -262,7 +262,7 @@ def _compute_mean(model: torch.nn.Module, data_loader: Iterable, device: torch.d
 
 def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_mask=None, task_id=-1):
     model.train()
-    run_epochs = args.crct_epochs
+    run_epochs = args.classifier_epochs
     crct_num = 0
     param_list = [p for p in model.parameters() if p.requires_grad]
     print('-' * 20)
