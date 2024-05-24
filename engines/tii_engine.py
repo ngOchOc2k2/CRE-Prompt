@@ -164,6 +164,7 @@ def evaluate(model: torch.nn.Module, classifier, data_loader,
     header = f'Test: Task[{task_id + 1}]'
 
     model.eval()
+    classifier.eval()
     with torch.no_grad():
         for input, target in metric_logger.log_every(data_loader, args.print_freq, header):
             input = input.to(device, non_blocking=True)
