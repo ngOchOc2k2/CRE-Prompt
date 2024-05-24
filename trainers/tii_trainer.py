@@ -18,7 +18,8 @@ def train(args):
 
     # Freeze the encoder
     for n, p in model.named_parameters():
-        p.requires_grad = False
+        if "embeddings" not in n:
+            p.requires_grad = False
 
     classifer = Classifier(args).to(device)
 
