@@ -83,6 +83,11 @@ class Param:
 
         # Misc parameters
         parser.add_argument('--print_freq', type=int, default=10, help='The frequency of printing')
+
+        # Distillation parameters
+        parser.add_argument('--gamma_old', type=float, default=0.0, help='Distillation loss weight')
+        parser.add_argument('--gamma_aux', type=float, default=0.0, help='Distillation loss weight')
+
         
 
         return parser
