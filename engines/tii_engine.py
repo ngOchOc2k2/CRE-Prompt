@@ -352,7 +352,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
 
                     loss_KD[0] = F.kl_div(F.log_softmax(task_logits[:, mask], dim=1),
                                             F.softmax(old_task_logits[:, mask], dim=1),
-                                                reduction='batchmean')
+                                                reduction='batchmean') / math.log(len(mask))
 
 
                 if args.gamma_aux > 0:
@@ -372,7 +372,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                     #                             reduction='batchmean')    
                     loss_KD[1] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
                                                 F.softmax(aux_logits[:, class_mask[task_id]], dim=1),
-                                                reduction='batchmean')     
+                                                reduction='batchmean') / math.log(len(mask))
                 
                 # loss = loss + args.gamma_old * loss_KD[:task_id].sum() + args.gamma_aux * loss_KD[task_id]
                 loss = loss + args.gamma_old * loss_KD[0] + args.gamma_aux * loss_KD[1]
