@@ -8,10 +8,10 @@ class Classifier(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(args.encoder_output_size * 2, args.encoder_output_size),
+            nn.Linear(args.encoder_output_size * 2, args.encoder_output_size * 2),
             # nn.ReLU(inplace=True),
             nn.GELU(),
-            nn.Linear(args.encoder_output_size, args.encoder_output_size * 2),
+            nn.Linear(args.encoder_output_size * 2, args.encoder_output_size * 2),
             # nn.ReLU(inplace=True),
         ).to(args.device)
 
