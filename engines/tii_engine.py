@@ -358,7 +358,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                 if args.gamma_aux > 0:
                     # KD loss for current task
                     with torch.no_grad():
-                        aux_logits = current_classifier(inp)
+                        aux_logits = current_classifier(current_inp)
 
                     if class_mask is not None:
                         mask = class_mask[task_id]
