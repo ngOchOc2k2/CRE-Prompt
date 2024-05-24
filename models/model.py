@@ -10,9 +10,9 @@ class Classifier(nn.Module):
         self.head = nn.Sequential(
             nn.Linear(args.encoder_output_size * 2, args.encoder_output_size),
             nn.ReLU(inplace=True),
-            nn.Linear(args.encoder_output_size, args.encoder_output_size),
+            nn.Linear(args.encoder_output_size, args.encoder_output_size * 2),
             nn.ReLU(inplace=True),
-            nn.Linear(args.encoder_output_size, args.num_of_relation)
+            nn.Linear(args.encoder_output_size * 2, args.num_of_relation)
         ).to(args.device)
 
     def forward(self, x):
