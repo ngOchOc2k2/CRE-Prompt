@@ -276,12 +276,6 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
     run_epochs = args.classifier_epochs
     crct_num = 0
     param_list = [p for p in model.parameters() if p.requires_grad]
-    if args.gamma_old > 0 or args.gamma_aux > 0:
-        # Learnable temperature
-        alpha = nn.Parameter(torch.tensor(1.0, dtype=torch.float32).to(device))
-        beta = nn.Parameter(torch.tensor(1.0, dtype=torch.float32).to(device))
-        param_list.append(alpha)
-        param_list.append(beta)
     print('-' * 20)
     print('Learnable parameters:')
     for name, p in model.named_parameters():
@@ -357,7 +351,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                         task_logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))[tgt_mask == 0]
 
                     loss_KD[0] = F.kl_div(F.log_softmax(task_logits[:, mask], dim=1),
-                                            F.softmax(old_task_logits[:, mask] * alpha, dim=1),
+                                            F.softmax(old_task_logits[:, mask], dim=1),
                                                 reduction='batchmean')
 
 
@@ -377,7 +371,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                     #                             F.softmax(aux_logits[:, class_mask[task_id]] * beta, dim=1),
                     #                             reduction='batchmean')    
                     loss_KD[1] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
-                                                F.softmax(aux_logits[:, class_mask[task_id]] * beta, dim=1),
+                                                F.softmax(aux_logits[:, class_mask[task_id]], dim=1),
                                                 reduction='batchmean')     
                 
                 # loss = loss + args.gamma_old * loss_KD[:task_id].sum() + args.gamma_aux * loss_KD[task_id]
