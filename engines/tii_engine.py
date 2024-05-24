@@ -316,7 +316,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
             logits = outputs
 
             # CE loss
-            if args.train_mask and class_mask is not None:
+            if class_mask is not None:
                 mask = []
                 for id in range(task_id+1):
                     mask.extend(class_mask[id])
@@ -341,7 +341,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                         old_logits = old_head(old_inp)
 
                 
-                    if args.train_mask and class_mask is not None:
+                    if class_mask is not None:
                         mask = []
                         for t in range(task_id):
                             mask.extend(class_mask[t])
@@ -360,7 +360,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                     with torch.no_grad():
                         aux_logits = current_classifier(inp)
 
-                    if args.train_mask and class_mask is not None:
+                    if class_mask is not None:
                         mask = class_mask[task_id]
                         not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
                         not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
