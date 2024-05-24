@@ -318,7 +318,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
             tgt = targets[_iter * num_sampled_pcls:(_iter + 1) * num_sampled_pcls]
             logits = model(inp)
 
-            if args.train_mask and class_mask is not None:
+            if class_mask is not None:
                 mask = []
                 for id in range(task_id+1):
                     mask.extend(class_mask[id])
