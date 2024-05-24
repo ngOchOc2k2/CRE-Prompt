@@ -9,10 +9,8 @@ class Classifier(nn.Module):
         super().__init__()
         self.mlp = nn.Sequential(
             nn.Linear(args.encoder_output_size * 2, args.encoder_output_size),
-            # nn.ReLU(inplace=True),
             nn.GELU(),
             nn.Linear(args.encoder_output_size, args.encoder_output_size * 2),
-            # nn.ReLU(inplace=True),
         ).to(args.device)
 
         self.head =  nn.Linear(args.encoder_output_size * 2, args.num_of_relation).to(args.device)
