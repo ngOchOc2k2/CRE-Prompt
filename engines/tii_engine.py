@@ -271,7 +271,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
         if p.requires_grad:
             print(name)
     print('-' * 20)
-    network_params = [{'params': param_list, 'lr': args.ca_lr, 'weight_decay': args.weight_decay}]
+    network_params = [{'params': param_list, 'lr': args.classifier_lr, 'weight_decay': args.weight_decay}]
     optimizer = optim.SGD(network_params, lr=args.classifier_lr, momentum=0.9, weight_decay=5e-4)
 
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=run_epochs)

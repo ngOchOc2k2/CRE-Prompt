@@ -36,6 +36,8 @@ class Param:
         parser.add_argument("--classifier_epochs", default=100, type=int)
         parser.add_argument("--encoder_epochs", default=10, type=int)
         parser.add_argument("--prompt_pool_epochs", default=10, type=int)
+
+        parser.add_argument("--weight_decay", default=5e-4, type=float)
         
         # momentum
         parser.add_argument("--sgd_momentum", default=0.1, type=float)
