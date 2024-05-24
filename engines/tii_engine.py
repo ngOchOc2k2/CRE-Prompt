@@ -41,7 +41,7 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
             lr_scheduler = None
 
         if task_id > 0:
-            old_classifier = copy.deepcopy(classifier)
+            old_head = copy.deepcopy(classifier)
 
         for epoch in range(args.encoder_epochs):
             # Train model
