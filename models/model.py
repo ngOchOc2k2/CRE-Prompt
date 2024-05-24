@@ -18,7 +18,7 @@ class Classifier(nn.Module):
 
     def forward(self, x):
         out = self.mlp(x)
-        # out = out + x
+        out = out + x
         return self.head(out)
 
 
