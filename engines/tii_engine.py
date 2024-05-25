@@ -37,7 +37,7 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
         # Create new optimizer for each task to clear optimizer status
         if task_id > 0:
             for n, p in model.named_parameters():
-                p.requires_grad = True
+                p.requires_grad = False
 
             optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
             lr_scheduler = None
