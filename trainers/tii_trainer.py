@@ -16,6 +16,11 @@ def train(args):
     print("Creating original model")
     model = BertRelationEncoder(args).to(device)
 
+
+    # Scale lr to batch size
+    args.encoder_lr = args.encoder_lr * args.batch_size / 128.0
+    args.classifier_lr = args.classifier_lr * args.batch_size / 128.0
+
     # Freeze the encoder
     for n, p in model.named_parameters():
         if "embeddings" not in n:
