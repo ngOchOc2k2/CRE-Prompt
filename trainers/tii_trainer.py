@@ -32,9 +32,24 @@ def train(args):
     print('number of params:', n_parameters)
 
     # Train classifier and model embeddings
-    params = list(model.encoder.embeddings.parameters()) + list(classifer.parameters())
 
-    optimizer = torch.optim.Adam(params, lr=args.encoder_lr)
+    base_params = list(model.encoder.embeddings.parameters())
+    classifier_params = list(classifer.parameters())
+    base_params = {
+        'params': base_params,
+        'lr': args.encoder_lr * 0.1
+    }
+    classifier_params = {
+        'params': classifier_params,
+        'lr': args.encoder_lr
+    }
+
+    optimizer = torch.optim.Adam([base_params, classifier_params])
+
+
+    # params = list(model.encoder.embeddings.parameters()) + list(classifer.parameters())
+    # optimizer = torch.optim.Adam(params, lr=args.encoder_lr)
+
     lr_scheduler = None
     criterion = torch.nn.CrossEntropyLoss().to(device)
 
