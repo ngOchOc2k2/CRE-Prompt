@@ -29,7 +29,6 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
     pre_ca_acc_matrix = np.zeros((args.num_tasks, args.num_tasks))
     global cls_mean
     global cls_cov
-    global old_head
     cls_mean = dict()
     cls_cov = dict()
 
@@ -37,11 +36,11 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
 
         # Create new optimizer for each task to clear optimizer status
         if task_id > 0:
+            for n, p in model.named_parameters():
+                p.requires_grad = True
+
             optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
             lr_scheduler = None
-
-        if task_id > 0:
-            old_head = copy.deepcopy(classifier)
 
         for epoch in range(args.encoder_epochs):
             # Train model
@@ -269,8 +268,6 @@ def _compute_mean(model: torch.nn.Module, data_loader: Iterable, device: torch.d
 
 def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_mask=None, task_id=-1):
     model.train()
-
-    current_classifier = copy.deepcopy(model)
 
 
     run_epochs = args.classifier_epochs

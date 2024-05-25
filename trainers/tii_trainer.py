@@ -18,15 +18,18 @@ def train(args):
 
     # Freeze the encoder
     for n, p in model.named_parameters():
-        # if "embeddings" not in n:
-        p.requires_grad = False
+        if "embeddings" not in n:
+            p.requires_grad = False
 
     classifer = Classifier(args).to(device)
 
     n_parameters = sum(p.numel() for p in classifer.parameters() if p.requires_grad)
     print('number of params:', n_parameters)
 
-    optimizer = torch.optim.Adam(classifer.parameters(), lr=args.encoder_lr)
+    # Train classifier and model embeddings
+    params = list(model.encoder.embeddings.parameters()) + list(classifer.parameters())
+
+    optimizer = torch.optim.Adam(params, lr=args.encoder_lr)
     lr_scheduler = None
     criterion = torch.nn.CrossEntropyLoss().to(device)
 
