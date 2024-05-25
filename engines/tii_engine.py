@@ -88,7 +88,8 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
 
             checkpoint_path = os.path.join(args.output_dir, 'checkpoint/task{}_checkpoint.pth'.format(task_id + 1))
             state_dict = {
-                'model': classifier.state_dict(),
+                'model': model.state_dict(),
+                'classifier': classifier.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'epoch': epoch,
                 'args': args,
