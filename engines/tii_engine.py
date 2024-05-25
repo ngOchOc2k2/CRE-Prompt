@@ -335,27 +335,6 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
                 # loss_KD = torch.zeros(task_id + 1).to(device)
                 loss_KD = torch.zeros(2).to(device)
 
-                if args.gamma_aux > 0:
-                    # KD loss for current task
-                    with torch.no_grad():
-                        aux_logits = current_classifier(current_inp)
-
-                    if class_mask is not None:
-                        mask = class_mask[task_id]
-                        not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
-                        not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
-                        aux_logits = aux_logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
-                        task_logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))[tgt_mask == 1]
-
-                    # loss_KD[task_id] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
-                    #                             F.softmax(aux_logits[:, class_mask[task_id]] * beta, dim=1),
-                    #                             reduction='batchmean')    
-                    loss_KD[1] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
-                                                F.softmax(aux_logits[:, class_mask[task_id]], dim=1),
-                                                reduction='batchmean')
-                    
-                    aux_mask_coef = math.log(len(mask))
-
                 if args.gamma_old > 0:
                     # KD loss for previous tasks
                     with torch.no_grad():
@@ -373,8 +352,29 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
 
                     loss_KD[0] = F.kl_div(F.log_softmax(task_logits[:, mask], dim=1),
                                             F.softmax(old_task_logits[:, mask], dim=1),
-                                                reduction='batchmean') / math.log(len(mask)) * aux_mask_coef
+                                                reduction='batchmean')
 
+                    old_mask_coef = math.log(len(mask))
+
+
+                if args.gamma_aux > 0:
+                    # KD loss for current task
+                    with torch.no_grad():
+                        aux_logits = current_classifier(current_inp)
+
+                    if class_mask is not None:
+                        mask = class_mask[task_id]
+                        not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
+                        not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+                        aux_logits = aux_logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+                        task_logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))[tgt_mask == 1]
+
+                    # loss_KD[task_id] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
+                    #                             F.softmax(aux_logits[:, class_mask[task_id]] * beta, dim=1),
+                    #                             reduction='batchmean')    
+                    loss_KD[1] = F.kl_div(F.log_softmax(task_logits[:, class_mask[task_id]], dim=1),
+                                                F.softmax(aux_logits[:, class_mask[task_id]], dim=1),
+                                                reduction='batchmean') / math.log(len(mask)) * old_mask_coef
                 
                 # loss = loss + args.gamma_old * loss_KD[:task_id].sum() + args.gamma_aux * loss_KD[task_id]
                 loss = loss + args.gamma_old * loss_KD[0] + args.gamma_aux * loss_KD[1]
