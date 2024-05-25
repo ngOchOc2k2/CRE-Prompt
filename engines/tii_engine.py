@@ -291,8 +291,7 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
 
     # TODO: efficiency may be improved by encapsulating sampled data into Datasets class and using distributed sampler.
     for epoch in range(run_epochs):
-        # num_sampled_pcls = args.batch_size
-        num_sampled_pcls = args.replay_s_e_e
+        num_sampled_pcls = args.batch_size
         metric_logger = utils.MetricLogger(delimiter="  ")
         metric_logger.add_meter('Lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
         metric_logger.add_meter('Loss', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
