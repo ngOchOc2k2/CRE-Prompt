@@ -91,25 +91,11 @@ class Manager(object):
 
 
         # Train classifier and model embeddings
+        modules = [classifier, encoder.encoder.embeddings]
+        modules = nn.ModuleList(modules)
+        modules_parameters = modules.parameters()
 
-        base_params = list(encoder.encoder.embeddings.parameters())
-        classifier_params = list(classifier.parameters())
-        base_params = {
-            'params': base_params,
-            'lr': args.encoder_lr
-        }
-        classifier_params = {
-            'params': classifier_params,
-            'lr': args.encoder_lr * 10
-        }
-
-        # modules = [classifier, encoder.encoder.embeddings]
-        # modules = nn.ModuleList(modules)
-        # modules_parameters = modules.parameters()
-
-        # optimizer = torch.optim.Adam([{"params": modules_parameters, "lr": args.encoder_lr}])
-
-        optimizer = torch.optim.Adam([base_params, classifier_params])
+        optimizer = torch.optim.Adam([{"params": modules_parameters, "lr": args.encoder_lr}])
 
         def train_data(data_loader_, name="", e_id=0):
             losses = []
@@ -405,14 +391,6 @@ class Manager(object):
 
             # new prompt pool
             new_prompt_pool = Prompt(args).to(device)
-            if steps > 0:  # Initialize new prompt pool with the previous prompt pool
-                with torch.no_grad():
-                    self.prompt_pools[-1].prompt.grad.zero_()
-                    self.prompt_pools[-1].prompt_key.grad.zero_()
-                    new_prompt_pool.prompt = self.prompt_pools[-1].prompt.detach().clone()
-                    new_prompt_pool.prompt_key = self.prompt_pools[-1].prompt_key.detach().clone()
-
-
             self.prompt_pools.append(new_prompt_pool)
 
             self.train_prompt_pool(args, encoder, self.prompt_pools[-1], cur_training_data, task_id=steps)

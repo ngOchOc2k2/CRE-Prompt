@@ -11,7 +11,7 @@ class Classifier(nn.Module):
             nn.Linear(args.encoder_output_size * 2, args.encoder_output_size, bias=True),
             nn.ReLU(inplace=True),
             nn.Linear(args.encoder_output_size, args.encoder_output_size, bias=True),
-            nn.ReLU(inplace=True),
+            # nn.ReLU(inplace=True),
             nn.Linear(args.encoder_output_size, args.rel_per_task * args.num_tasks),
         ).to(args.device)
 
