@@ -96,11 +96,11 @@ class Manager(object):
         classifier_params = list(classifier.parameters())
         base_params = {
             'params': base_params,
-            'lr': args.encoder_lr * 0.1
+            'lr': args.encoder_lr
         }
         classifier_params = {
             'params': classifier_params,
-            'lr': args.encoder_lr
+            'lr': args.encoder_lr * 10
         }
 
         # modules = [classifier, encoder.encoder.embeddings]
@@ -347,6 +347,8 @@ class Manager(object):
         return total_hits / sampled
 
     def train(self, args):
+        device = args.device
+
         # initialize test results list
         test_cur = []
         test_total = []
@@ -365,6 +367,7 @@ class Manager(object):
 
         # model
         encoder = BertRelationEncoder(config=args).to(args.device)
+        classifier = Classifier(args=args).to(args.device)
 
         # pools
         self.prompt_pools = []
@@ -401,7 +404,17 @@ class Manager(object):
                 self.train_encoder(args, encoder, cur_training_data, task_id=steps)
 
             # new prompt pool
-            self.prompt_pools.append(Prompt(args).to(args.device))
+            new_prompt_pool = Prompt(args).to(device)
+            # if steps > 0:  # Initialize new prompt pool with the previous prompt pool
+            #     with torch.no_grad():
+            #         self.prompt_pools[-1].prompt.grad.zero_()
+            #         self.prompt_pools[-1].prompt_key.grad.zero_()
+            #         new_prompt_pool.prompt = self.prompt_pools[-1].prompt.detach().clone()
+            #         new_prompt_pool.prompt_key = self.prompt_pools[-1].prompt_key.detach().clone()
+
+
+            self.prompt_pools.append(new_prompt_pool)
+
             self.train_prompt_pool(args, encoder, self.prompt_pools[-1], cur_training_data, task_id=steps)
 
             # memory
