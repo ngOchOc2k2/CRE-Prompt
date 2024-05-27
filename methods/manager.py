@@ -89,11 +89,27 @@ class Manager(object):
         classifier.train()
         data_loader = get_data_loader(args, training_data, shuffle=True)
 
-        modules = [classifier, encoder.encoder.embeddings]
-        modules = nn.ModuleList(modules)
-        modules_parameters = modules.parameters()
 
-        optimizer = torch.optim.Adam([{"params": modules_parameters, "lr": args.encoder_lr}])
+        # Train classifier and model embeddings
+
+        base_params = list(encoder.encoder.embeddings.parameters())
+        classifier_params = list(classifier.parameters())
+        base_params = {
+            'params': base_params,
+            'lr': args.encoder_lr * 0.1
+        }
+        classifier_params = {
+            'params': classifier_params,
+            'lr': args.encoder_lr
+        }
+
+        # modules = [classifier, encoder.encoder.embeddings]
+        # modules = nn.ModuleList(modules)
+        # modules_parameters = modules.parameters()
+
+        # optimizer = torch.optim.Adam([{"params": modules_parameters, "lr": args.encoder_lr}])
+
+        optimizer = torch.optim.Adam([base_params, classifier_params])
 
         def train_data(data_loader_, name="", e_id=0):
             losses = []
