@@ -405,12 +405,12 @@ class Manager(object):
 
             # new prompt pool
             new_prompt_pool = Prompt(args).to(device)
-            # if steps > 0:  # Initialize new prompt pool with the previous prompt pool
-            #     with torch.no_grad():
-            #         self.prompt_pools[-1].prompt.grad.zero_()
-            #         self.prompt_pools[-1].prompt_key.grad.zero_()
-            #         new_prompt_pool.prompt = self.prompt_pools[-1].prompt.detach().clone()
-            #         new_prompt_pool.prompt_key = self.prompt_pools[-1].prompt_key.detach().clone()
+            if steps > 0:  # Initialize new prompt pool with the previous prompt pool
+                with torch.no_grad():
+                    self.prompt_pools[-1].prompt.grad.zero_()
+                    self.prompt_pools[-1].prompt_key.grad.zero_()
+                    new_prompt_pool.prompt = self.prompt_pools[-1].prompt.detach().clone()
+                    new_prompt_pool.prompt_key = self.prompt_pools[-1].prompt_key.detach().clone()
 
 
             self.prompt_pools.append(new_prompt_pool)
