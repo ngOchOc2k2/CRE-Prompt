@@ -34,15 +34,15 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
 
     for task_id in range(args.num_tasks):
 
-        # # Create new optimizer for each task to clear optimizer status
-        # if task_id > 0:
-        #     for n, p in model.named_parameters():
-        #         p.requires_grad = False
+        # Create new optimizer for each task to clear optimizer status
+        if task_id > 0:
+            for n, p in model.named_parameters():
+                p.requires_grad = False
 
-        #     optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
-        #     lr_scheduler = None
+            optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
+            lr_scheduler = None
 
-        if task_id == 0:
+        if task_id == 0 and args.warmup_epochs > 0:
             print(f"WARMUP: Start training for {args.warmup_epochs} epochs")
             for epoch in range(args.warmup_epochs):
                 # Train model
@@ -57,7 +57,7 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
 
             optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
             lr_scheduler = None
-            
+
 
         for epoch in range(args.encoder_epochs):
             # Train model
