@@ -70,8 +70,8 @@ def train_and_evaluate(original_model, original_classifier, classifier, prompt_p
             with torch.no_grad():
                 prompt_pools[task_id - 1].prompt.grad.zero_()
                 prompt_pools[task_id - 1].prompt_key.grad.zero_()
-                prompt_pools[task_id].prompt = prompt_pools[task_id - 1].prompt.clone().detach()
-                prompt_pools[task_id].prompt_key = prompt_pools[task_id - 1].prompt_key.clone().detach()
+                prompt_pools[task_id].prompt.data = prompt_pools[task_id - 1].prompt.clone().detach().data
+                prompt_pools[task_id].prompt_key.data = prompt_pools[task_id - 1].prompt_key.clone().detach().data
 
 
         for epoch in range(args.prompt_pool_epochs):
