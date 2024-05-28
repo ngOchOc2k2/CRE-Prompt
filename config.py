@@ -28,6 +28,10 @@ class Param:
         parser.add_argument("--num_workers", default=4, type=int)
         parser.add_argument("--pin-mem', action='store_true', help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')", default=True)
         parser.add_argument("--no-pin-mem", action='store_false', dest='pin_mem', help='')
+        parser.add_argument("--max_grad_norm", default=1.0, type=float)
+        parser.add_argument("--sgd_momentum", default=0.1, type=float)
+        parser.add_argument("--weight_decay", default=5e-4, type=float)
+        parser.add_argument("--seed", default=42, type=int)
 
         # learning rate
         parser.add_argument("--classifier_lr", default=1e-2, type=float)
@@ -36,29 +40,16 @@ class Param:
         parser.add_argument("--classifier_epochs", default=100, type=int)
         parser.add_argument("--encoder_epochs", default=10, type=int)
         parser.add_argument("--prompt_pool_epochs", default=10, type=int)
-
-        parser.add_argument("--weight_decay", default=5e-4, type=float)
-        
-        # momentum
-        parser.add_argument("--sgd_momentum", default=0.1, type=float)
+        parser.add_argument("--warmup_epochs", default=0, type=int)
 
         # gmm
         parser.add_argument("--gmm_num_components", default=1, type=int)
         # loss balancing
         parser.add_argument("--pull_constraint_coeff", default=0.1, type=float)
 
-
-
         # replay size
         parser.add_argument("--replay_s_e_e", default=256, type=int)
         parser.add_argument("--replay_epochs", default=100, type=int)
-
-        # seed
-        parser.add_argument("--seed", default=42, type=int)
-
-
-        # max gradient norm
-        parser.add_argument("--max_grad_norm", default=1.0, type=float)
 
         # Path
         parser.add_argument("--data_path", default="local_datasets/", type=str)
@@ -79,15 +70,11 @@ class Param:
         parser.add_argument("--prompt_key_init", default="uniform", type=str)
         parser.add_argument("--prompt-type", default="coda-prompt", type=str)
 
-        parser.add_argument('--train_inference_task_only', action='store_true')
+        
 
         # Misc parameters
         parser.add_argument('--print_freq', type=int, default=10, help='The frequency of printing')
-
-        # Distillation parameters
-        parser.add_argument('--gamma_old', type=float, default=0.0, help='Distillation loss weight')
-        parser.add_argument('--gamma_aux', type=float, default=0.0, help='Distillation loss weight')
-
+        parser.add_argument('--train_inference_task_only', action='store_true')
         
 
         return parser
