@@ -55,6 +55,7 @@ class Param:
         parser.add_argument("--data_path", default="local_datasets/", type=str)
         parser.add_argument("--bert_path", default="local_datasets/bert-base-uncased", type=str)
         parser.add_argument('--output_dir', default='./output', help='path where to save, empty for no saving')
+        parser.add_argument('--trained_original_model', default='./output', type=str, help='Path to the trained original model')
 
         # swag params
         parser.add_argument("--cov_mat", action="store_false", default=True)
@@ -62,14 +63,17 @@ class Param:
         parser.add_argument("--sample_freq", type=int, default=20)
 
         # prompt params
-        parser.add_argument("--prompt_length", type=int, default=1)
+        parser.add_argument("--prompt_length", type=int, default=80)
         parser.add_argument("--prompt_embed_dim", type=int, default=768)
         parser.add_argument("--prompt_pool_size", type=int, default=80)
-        parser.add_argument("--prompt_top_k", type=int, default=8)
+        parser.add_argument("--prompt_top_k", type=int, default=1)
         parser.add_argument("--prompt_init", default="uniform", type=str)
         parser.add_argument("--prompt_key_init", default="uniform", type=str)
         parser.add_argument("--prompt-type", default="coda-prompt", type=str)
+        parser.add_argument("--larger_prompt_lr", action="store_true")
 
+        # Contrastive regularization
+        parser.add_argument('--reg', default=0.1, type=float)
         
 
         # Misc parameters
