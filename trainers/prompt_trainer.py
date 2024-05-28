@@ -7,7 +7,7 @@ from datasets import build_continual_dataloader
 from models.backbone import BertRelationEncoder
 from models.model import Classifier, ClassifierBasic
 from models.prompt import Prompt
-from engines.tii_engine import train_and_evaluate
+from engines.prompt_engine import train_and_evaluate
 
 
 def train(args):
