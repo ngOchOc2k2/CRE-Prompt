@@ -29,6 +29,7 @@ def train(args):
     # Scale lr to batch size
     args.encoder_lr = args.encoder_lr * args.batch_size / 128.0
     args.classifier_lr = args.classifier_lr * args.batch_size / 128.0
+    args.prompt_pool_lr = args.prompt_pool_lr * args.batch_size / 128.0
 
     # Train classifier and prompt pools
     prompt_pools = nn.ModuleList([Prompt(args) for _ in range(args.num_tasks)]).to(device)
