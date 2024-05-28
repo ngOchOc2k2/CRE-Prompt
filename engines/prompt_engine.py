@@ -179,6 +179,8 @@ def train_one_epoch(model, classifier, prompt_pool, criterion, data_loader: Iter
         loss = criterion(logits, target)
 
         loss += orth_loss(feat, target, device, args)
+        prompt_reduce_sim_loss = -args.pull_constraint_coeff * output["reduce_sim"]
+        loss += prompt_reduce_sim_loss
 
         acc1, acc5 = accuracy(logits, target, topk=(1, 5))
 
