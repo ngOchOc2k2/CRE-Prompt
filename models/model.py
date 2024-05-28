@@ -29,6 +29,7 @@ class Classifier(nn.Module):
             nn.Linear(args.encoder_output_size * 2, args.encoder_output_size),
             nn.ReLU(),
             nn.Linear(args.encoder_output_size, args.encoder_output_size),
+            nn.ReLU(),
         ).to(args.device)
 
         self.head =  nn.Linear(args.encoder_output_size, args.num_of_relation).to(args.device)
