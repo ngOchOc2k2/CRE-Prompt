@@ -42,22 +42,6 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
             optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
             lr_scheduler = None
 
-        if task_id == 0 and args.warmup_epochs > 0:
-            print(f"WARMUP: Start training for {args.warmup_epochs} epochs")
-            for epoch in range(args.warmup_epochs):
-                # Train model
-                train_stats = train_one_epoch(model=model, classifier=classifier, criterion=criterion,
-                                              data_loader=data_loader[task_id]['train'], optimizer=optimizer,
-                                              device=device, epoch=epoch, max_norm=args.max_grad_norm,
-                                              set_training_mode=True, task_id=task_id, class_mask=class_mask, args=args, )
-
-            # Reset
-            for n, p in model.named_parameters():
-                p.requires_grad = False
-
-            optimizer = torch.optim.Adam(classifier.parameters(), lr=args.encoder_lr)
-            lr_scheduler = None
-
 
         for epoch in range(args.encoder_epochs):
             # Train model
