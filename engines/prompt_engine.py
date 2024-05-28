@@ -210,11 +210,11 @@ def train_one_epoch(model, classifier, prompt_pool, criterion, data_loader: Iter
 @torch.no_grad()
 def evaluate(model, original_classifier, classifier, prompt_pools,
               data_loader,
-             device, task_id=-1, class_mask=None, target_task_map=None, args=None, ):
+             device, i=-1, task_id=-1, class_mask=None, target_task_map=None, args=None, ):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = utils.MetricLogger(delimiter="  ")
-    header = f'Test: Task[{task_id + 1}]'
+    header = 'Test: [Task {}]'.format(i + 1)
 
     # switch to evaluation mode
     model.eval()
@@ -285,7 +285,7 @@ def evaluate_till_now(model, original_classifier, classifier, prompt_pools,
     for i in range(task_id + 1):
         test_stats = evaluate(model=model, original_classifier=original_classifier, classifier=classifier, prompt_pools=prompt_pools,
                               data_loader=data_loader[i]['test'],
-                              device=device, task_id=i, class_mask=class_mask, target_task_map=target_task_map,
+                              device=device, i=i, task_id=task_id, class_mask=class_mask, target_task_map=target_task_map,
                               args=args)
 
         stat_matrix[0, i] = test_stats['Acc@1']
