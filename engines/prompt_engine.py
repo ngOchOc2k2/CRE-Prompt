@@ -334,7 +334,7 @@ def _compute_mean(model: torch.nn.Module, prompt_pool, data_loader: Iterable, de
             with torch.no_grad():
                 x_key = model(inputs)['x_encoded']
 
-            output = model(input, prompt_pool, x_key)
+            output = model(inputs, prompt_pool, x_key)
             features = output["x_encoded"]
             features_per_cls.append(features)
         features_per_cls = torch.cat(features_per_cls, dim=0)
