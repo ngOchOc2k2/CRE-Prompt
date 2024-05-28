@@ -75,7 +75,7 @@ def train_and_evaluate(original_model, original_classifier, classifier, prompt_p
 
         for epoch in range(args.prompt_pool_epochs):
             # Train model
-            train_stats = train_one_epoch(model=original_classifier, classifier=classifier, prompt_pool=prompt_pools[task_id],
+            train_stats = train_one_epoch(model=original_model, classifier=classifier, prompt_pool=prompt_pools[task_id],
                                           criterion=criterion,
                                           data_loader=data_loader[task_id]['train'], optimizer=optimizer,
                                           device=device, epoch=epoch, max_norm=args.max_grad_norm,
