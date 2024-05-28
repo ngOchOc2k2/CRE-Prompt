@@ -114,6 +114,7 @@ def train_and_evaluate(original_model, original_classifier, classifier, prompt_p
         print('-' * 20)
         print(f'Evaluate task {task_id + 1} after CA')
         test_stats = evaluate_till_now(model=original_model, original_classifier=original_classifier, classifier=classifier, prompt_pools=prompt_pools,
+                                       data_loader=data_loader,
                                        device=device,
                                        task_id=task_id, class_mask=class_mask, target_task_map=target_task_map,
                                        acc_matrix=acc_matrix, args=args)
