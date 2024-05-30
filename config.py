@@ -74,6 +74,7 @@ class Param:
 
         # Contrastive regularization
         parser.add_argument('--reg', default=0.1, type=float)
+        parser.add_argument('--temp', default=0.8, type=float)
         
 
         # Misc parameters
