@@ -17,7 +17,7 @@ def train(args):
 
     print("Creating original model")
     original_model = BertRelationEncoder(args).to(device)
-    original_classifier = Classifier(args).to(device)
+    original_classifier = Classifier(args, out_num_tasks=True).to(device)
 
     print("Creating model")
     classifier = ClassifierBasic(args).to(device)

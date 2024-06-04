@@ -231,16 +231,21 @@ def evaluate(model, original_classifier, classifier, prompt_pools,
             original_output = model(input)
             x_key = original_output['x_encoded']
             logits = original_classifier(x_key)
-            if class_mask is not None:
-                mask = []
-                for id in range(task_id + 1):
-                    mask.extend(class_mask[id])
-                not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
-                not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
-                logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+            # if class_mask is not None:
+            #     mask = []
+            #     for id in range(task_id + 1):
+            #         mask.extend(class_mask[id])
+            #     not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
+            #     not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+            #     logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+
+            not_mask = np.arange(task_id + 1, args.num_tasks)
+            not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+            logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
             
             pool_id = torch.max(logits, dim=1)[1]
-            pool_id = torch.tensor([target_task_map[v.item()] for v in pool_id], device=device).unsqueeze(-1)
+            pool_id = pool_id.unsqueeze(-1)
+            # pool_id = torch.tensor([target_task_map[v.item()] for v in pool_id], device=device).unsqueeze(-1)
 
             prompt_pools = [prompt_pools[i.item()] for i in pool_id]
 
