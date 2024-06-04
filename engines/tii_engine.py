@@ -17,6 +17,7 @@ import utils
 from torch import optim
 from torch.distributions.multivariate_normal import MultivariateNormal
 from timm.utils import accuracy
+from models.model import Classifier
 
 
 def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
@@ -43,22 +44,26 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
             lr_scheduler = None
 
 
-        for epoch in range(args.encoder_epochs):
-            # Train model
-            train_stats = train_one_epoch(model=model, classifier=classifier, criterion=criterion,
-                                          data_loader=data_loader[task_id]['train'], optimizer=optimizer,
-                                          device=device, epoch=epoch, max_norm=args.max_grad_norm,
-                                          set_training_mode=True, task_id=task_id, class_mask=class_mask, args=args, )
+        if task_id == 0:
+            for epoch in range(args.encoder_epochs):
+                # Train model
+                train_stats = train_one_epoch(model=model, classifier=classifier, criterion=criterion,
+                                            data_loader=data_loader[task_id]['train'], optimizer=optimizer,
+                                            device=device, epoch=epoch, max_norm=args.max_grad_norm,
+                                            set_training_mode=True, task_id=task_id, class_mask=class_mask, args=args, target_task_map=target_task_map)
 
-            if lr_scheduler:
-                lr_scheduler.step(epoch)
+                if lr_scheduler:
+                    lr_scheduler.step(epoch)
 
-        print('-' * 20)
-        print(f'Evaluate task {task_id + 1} before CA')
-        test_stats_pre_ca = evaluate_till_now(model=model, classifier=classifier, data_loader=data_loader,
-                                              device=device,
-                                              task_id=task_id, class_mask=class_mask, target_task_map=target_task_map,
-                                              acc_matrix=pre_ca_acc_matrix, args=args)
+            # Reset classifier
+            classifier = Classifier(args, out_num_tasks=True).to(device)
+
+        # print('-' * 20)
+        # print(f'Evaluate task {task_id + 1} before CA')
+        # test_stats_pre_ca = evaluate_till_now(model=model, classifier=classifier, data_loader=data_loader,
+        #                                       device=device,
+        #                                       task_id=task_id, class_mask=class_mask, target_task_map=target_task_map,
+        #                                       acc_matrix=pre_ca_acc_matrix, args=args)
         print('-' * 20)
 
         # TODO compute mean and variance
@@ -72,7 +77,7 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
         if task_id > 0:
             print('-' * 20)
             print(f'Align classifier for task {task_id + 1}')
-            train_task_adaptive_prediction(classifier, args, device, class_mask, task_id)
+            train_task_adaptive_prediction(classifier, args, device, class_mask, task_id, target_task_map=target_task_map)
             print('-' * 20)
 
         # Evaluate model
@@ -114,7 +119,7 @@ def train_and_evaluate(model: torch.nn.Module, classifier: torch.nn.Module,
 
 def train_one_epoch(model: torch.nn.Module, classifier, criterion, data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, max_norm: float = 0,
-                    set_training_mode=True, task_id=-1, class_mask=None, args=None, ):
+                    set_training_mode=True, task_id=-1, class_mask=None, args=None, target_task_map=None,):
     model.train(set_training_mode)
     classifier.train(set_training_mode)
 
@@ -127,15 +132,24 @@ def train_one_epoch(model: torch.nn.Module, classifier, criterion, data_loader: 
         input = input.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
 
+        if task_id > 0:
+            # Translate target to task_id
+            target = torch.tensor([target_task_map[v.item()] for v in target]).to(device)
+
         output = model(input)
         logits = classifier(output["x_encoded"])
 
         # here is the trick to mask out classes of non-current tasks
-        if class_mask is not None:
-            mask = class_mask[task_id]
-            not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
+        if task_id > 0:
+            not_mask = np.arange(task_id + 1, args.num_tasks)
             not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
             logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+        else:
+            if class_mask is not None:
+                mask = class_mask[task_id]
+                not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
+                not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+                logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
 
         loss = criterion(logits, target)
 
@@ -164,7 +178,7 @@ def train_one_epoch(model: torch.nn.Module, classifier, criterion, data_loader: 
 
 @torch.no_grad()
 def evaluate(model: torch.nn.Module, classifier, data_loader,
-             device, task_id=-1, class_mask=None, target_task_map=None, args=None, ):
+             device, task_id=-1, class_mask=None, target_task_map=None, args=None, current_task=-1):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -177,8 +191,15 @@ def evaluate(model: torch.nn.Module, classifier, data_loader,
             input = input.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
 
+            # Translate target to task_id
+            target = torch.tensor([target_task_map[v.item()] for v in target]).to(device)
+
             output = model(input)
             logits = classifier(output["x_encoded"])
+
+            not_mask = np.arange(current_task + 1, args.num_tasks)
+            not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+            logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
 
             # # here is the trick to mask out classes of non-current tasks
             # if args.task_inc and class_mask is not None:
@@ -196,7 +217,7 @@ def evaluate(model: torch.nn.Module, classifier, data_loader,
             metric_logger.meters['Acc@5'].update(acc5.item(), n=input.shape[0])
 
             task_id_preds = torch.max(logits, dim=1)[1]
-            task_id_preds = torch.tensor([target_task_map[v.item()] for v in task_id_preds]).to(device)
+            # task_id_preds = torch.tensor([target_task_map[v.item()] for v in task_id_preds]).to(device)
             batch_size = input.shape[0]
             tii_acc = torch.sum(task_id_preds == task_id) / batch_size
             metric_logger.meters['TII Acc'].update(tii_acc.item(), n=batch_size)
@@ -220,7 +241,7 @@ def evaluate_till_now(model: torch.nn.Module, classifier, data_loader,
     for i in range(task_id + 1):
         test_stats = evaluate(model=model, classifier=classifier, data_loader=data_loader[i]['test'],
                               device=device, task_id=i, class_mask=class_mask, target_task_map=target_task_map,
-                              args=args)
+                              args=args, current_task=task_id)
 
         stat_matrix[0, i] = test_stats['Acc@1']
         stat_matrix[1, i] = test_stats['Acc@5']
@@ -268,7 +289,7 @@ def _compute_mean(model: torch.nn.Module, data_loader: Iterable, device: torch.d
         cls_cov[cls_id] = torch.cov(features_per_cls.T) + (torch.eye(cls_mean[cls_id].shape[-1]) * 1e-4).to(device)
 
 
-def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_mask=None, task_id=-1):
+def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_mask=None, task_id=-1, target_task_map=None):
     model.train()
 
 
@@ -312,18 +333,26 @@ def train_task_adaptive_prediction(model: torch.nn.Module, args, device, class_m
             inp = inputs[_iter * num_sampled_pcls:(_iter + 1) * num_sampled_pcls]
             tgt = targets[_iter * num_sampled_pcls:(_iter + 1) * num_sampled_pcls]
             tgt_mask = target_mask[_iter * num_sampled_pcls:(_iter + 1) * num_sampled_pcls]
+
+            # Translate target to task_id
+            tgt = torch.tensor([target_task_map[v.item()] for v in tgt]).to(device)
+
             outputs = model(inp)
             logits = outputs
 
-            # CE loss
-            if class_mask is not None:
-                mask = []
-                for id in range(task_id+1):
-                    mask.extend(class_mask[id])
-                # print(mask)
-                not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
-                not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
-                logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+            # # CE loss
+            # if class_mask is not None:
+            #     mask = []
+            #     for id in range(task_id+1):
+            #         mask.extend(class_mask[id])
+            #     # print(mask)
+            #     not_mask = np.setdiff1d(np.arange(args.nb_classes), mask)
+            #     not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+            #     logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
+
+            not_mask = np.arange(task_id + 1, args.num_tasks)
+            not_mask = torch.tensor(not_mask, dtype=torch.int64).to(device)
+            logits = logits.index_fill(dim=1, index=not_mask, value=float('-inf'))
             
             loss = criterion(logits, tgt)
 

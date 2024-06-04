@@ -2,7 +2,7 @@ import torch.nn as nn
 
 
 class Classifier(nn.Module):
-    def __init__(self, args):
+    def __init__(self, args, out_num_tasks=False):
         super().__init__()
         self.mlp = nn.Sequential(
             nn.Linear(args.encoder_output_size * 2, args.encoder_output_size),
@@ -10,7 +10,10 @@ class Classifier(nn.Module):
             nn.Linear(args.encoder_output_size, args.encoder_output_size * 2),
         ).to(args.device)
 
-        self.head =  nn.Linear(args.encoder_output_size * 2, args.num_of_relation).to(args.device)
+        if out_num_tasks:
+            self.head = nn.Linear(args.encoder_output_size * 2, args.num_tasks).to(args.device)
+        else:
+            self.head =  nn.Linear(args.encoder_output_size * 2, args.num_of_relation).to(args.device)
 
     def forward(self, x):
         out = self.mlp(x)
