@@ -26,18 +26,20 @@ class Param:
         parser.add_argument("--vocab_size", default=30522, type=int)
         parser.add_argument("--marker_size", default=4, type=int)
         parser.add_argument("--num_workers", default=0, type=int)
-
+        parser.add_argument("--hidden_size", default=768, type=int)
+        
         # learning rate
         parser.add_argument("--classifier_lr", default=1e-2, type=float)
         parser.add_argument("--encoder_lr", default=1e-3, type=float)
         parser.add_argument("--prompt_pool_lr", default=1e-3, type=float)
+        
         # momentum
         parser.add_argument("--sgd_momentum", default=0.1, type=float)
 
         # gmm
         parser.add_argument("--gmm_num_components", default=1, type=int)
         # loss balancing
-        parser.add_argument("--pull_constraint_coeff", default=0.1, type=float)
+        parser.add_argument("--pull_constraint_coeff", default=0., type=float)
 
         # epochs
         parser.add_argument("--classifier_epochs", default=100, type=int)
@@ -61,15 +63,18 @@ class Param:
         # swag params
         parser.add_argument("--cov_mat", action="store_false", default=True)
         parser.add_argument("--max_num_models", type=int, default=10)
-        parser.add_argument("--sample_freq", type=int, default=20)
+        parser.add_argument("--sample_freq", type=int, default=10)
 
         # prompt params
         parser.add_argument("--prompt_length", type=int, default=1)
         parser.add_argument("--prompt_embed_dim", type=int, default=768)
+        parser.add_argument("--num_hidden_layers", default=12, type=int)
         parser.add_argument("--prompt_pool_size", type=int, default=80)
         parser.add_argument("--prompt_top_k", type=int, default=8)
         parser.add_argument("--prompt_init", default="uniform", type=str)
         parser.add_argument("--prompt_key_init", default="uniform", type=str)
         parser.add_argument("--prompt-type", default="coda-prompt", type=str)
+        parser.add_argument("--prompt_mode", default="prefix", type=str)
+        parser.add_argument("--query_mode", default="cosine", type=str)
 
         return parser

@@ -15,14 +15,31 @@ class data_set(Dataset):
         return (self.data[idx], idx)
 
     def collate_fn(self, data):
+        attention = []
         label = torch.tensor([item[0]["relation"] for item in data])
         tokens = [torch.tensor(item[0]["tokens"]) for item in data]
+        
+        # Kiểm tra xem item có thuộc tính 'attention_mask' hay không
+        attention = [torch.tensor(item[0]["attention_mask"]) if "attention_mask" in item[0] else None for item in data]
         ind = [item[1] for item in data]
+
+        # if attention != []:
+        #     try:
+        #         key = [torch.tensor(item[0]["key"]) for item in data]
+        #         return (label, tokens, key, ind)
+        #     except KeyError:
+        #         return (label, tokens, ind)
+        # else:
+        #     try:
+        #         key = [torch.tensor(item[0]["key"]) for item in data]
+        #         return (label, tokens, key, ind)
+        #     except KeyError:
+        #         return (label, tokens, ind)
 
         try:
             key = [torch.tensor(item[0]["key"]) for item in data]
             return (label, tokens, key, ind)
-        except:
+        except KeyError:
             return (label, tokens, ind)
 
 
@@ -31,4 +48,9 @@ def get_data_loader(config, data, shuffle=False, drop_last=False, batch_size=Non
     if batch_size == None:
         batch_size = config.batch_size
     batch_size = min(batch_size, len(data))
-    return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, pin_memory=True, num_workers=config.num_workers, collate_fn=dataset.collate_fn, drop_last=drop_last)
+    return DataLoader(
+        dataset=dataset, 
+        batch_size=batch_size, 
+        shuffle=shuffle, 
+        collate_fn=dataset.collate_fn, 
+    )
