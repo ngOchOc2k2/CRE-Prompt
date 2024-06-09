@@ -1,4 +1,4 @@
-for seed in 2021 2121 2221 2321 2421
+for seed in 2021 2121 2221
 do
     python main.py \
     --seed $seed \
@@ -13,7 +13,7 @@ do
 done
 
 
-for seed in 2021 2121 2221 2321 2421
+for seed in 2021 2121 2221
 do
     python main.py \
     --seed 2421 \
