@@ -16,7 +16,7 @@ done
 for seed in 2021 2121
 do
     python main.py \
-    --seed 2421 \
+    --seed $seed \
     --dataname TACRED \
     --output_dir ./output/tacred_seed_$seed \
     --trained_original_model ./output/tacred_tii_seed_$seed \
